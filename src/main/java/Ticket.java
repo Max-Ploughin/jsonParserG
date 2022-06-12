@@ -1,13 +1,12 @@
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-
+import com.google.gson.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
+
 
 /*
 Class that describes json file "Tickets".
@@ -114,38 +113,41 @@ public class Ticket {
 
     }
 
-    private static ArrayList<Date> arrayOfDepartureDates(JsonArray jsonArray){
+    public int getFlightTime(){
+
         /*
-        Method for getting ArrayList of departure dates
+        Method for getting time of flight
          */
 
-        ArrayList<Date> arrayOfDates = new ArrayList<>();
+        Date arrival = convertingStringsToDate(arrival_date, arrival_time);
+        Date departure = convertingStringsToDate(departure_date, departure_time);
+        long diff = arrival.getTime() - departure.getTime();
 
-        List<Ticket> ticketsList = jsonListOfElements(jsonArray);
-        for (Ticket elem : ticketsList){
-            Date date = convertingStringsToDate(elem.getDeparture_date(), elem.getDeparture_time());
-            arrayOfDates.add(date);
-        }
+        return ((int)diff/60000 + calculateTimeDiff());
 
-        return arrayOfDates;
     }
 
-    private static ArrayList<Date> arrayOfArrivalDates(JsonArray jsonArray){
+    private int calculateTimeDiff(){
+
         /*
-        Method for getting ArrayList of arrival dates
+        Method for getting minutes of difference between time zones
          */
 
-        ArrayList<Date> arrayOfDates = new ArrayList<>();
+        JsonArray timeZonesJson = ParseJson.ParseInArray("timeZones.json");
+        String originZone = TimeZoneJSON.getTimeZone(timeZonesJson, getOrigin_name());
+        String destinationZone = TimeZoneJSON.getTimeZone(timeZonesJson, getDestination_name());
 
-        List<Ticket> ticketsList = jsonListOfElements(jsonArray);
-        for (Ticket elem : ticketsList){
-            Date date = convertingStringsToDate(elem.getArrival_date(), elem.getArrival_time());
-            arrayOfDates.add(date);
-        }
+        ZoneId idOfOrigin = ZoneId.of(originZone);
+        ZoneId idOfDestination = ZoneId.of(destinationZone);
 
-        return arrayOfDates;
+        LocalDateTime localDateTimeOrigin = LocalDateTime.now(idOfOrigin);
+        LocalDateTime localDateTimeDestination = LocalDateTime.now(idOfDestination);
+
+        long differenceOfZones = Duration.between(localDateTimeDestination, localDateTimeOrigin).getSeconds();
+        int minutes = (int)differenceOfZones/60 + (int)differenceOfZones % 60;
+
+        return minutes;
     }
-
 
     public static int getAverageFlightTime(JsonArray jsonArray){
         /*
@@ -167,16 +169,11 @@ public class Ticket {
          */
 
         List<Integer> result = new ArrayList<>();
-        List<Date> arrayOfDepartureDates = arrayOfDepartureDates(jsonArray);
-        List<Date> arrayOfArrivalDates = arrayOfArrivalDates(jsonArray);
+        List<Ticket> tickets = jsonListOfElements(jsonArray);
 
-        int count = 0;
-        for (Date obj : arrayOfDepartureDates) {
-
-            Long diff = (arrayOfArrivalDates.get(count).getTime() - obj.getTime())/60000;
-            result.add(diff.intValue());
-            count++;
-
+        for (Ticket ticket : tickets){
+            Integer flightTime = Integer.valueOf(ticket.getFlightTime());
+            result.add(flightTime);
         }
 
         return result;

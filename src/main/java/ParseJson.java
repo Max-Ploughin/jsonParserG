@@ -25,5 +25,20 @@ public class ParseJson {
         return null;
     }
 
+    public static JsonArray ParseInArray(String path){
+
+        try{
+            JsonElement fileElement = JsonParser.parseReader(new FileReader(path));
+
+
+            JsonArray jsonArrayOfJson = fileElement.getAsJsonArray().getAsJsonArray();
+            return jsonArrayOfJson;
+
+        } catch (FileNotFoundException e){
+            System.out.println("File not found");
+        }
+
+        return null;
+    }
 
 }
