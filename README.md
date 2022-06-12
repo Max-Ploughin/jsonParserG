@@ -5,5 +5,6 @@
 * 90-й процентиль времени полета между городами  Владивосток и Тель-Авив.
 
 ## Результат
-![image](https://user-images.githubusercontent.com/82418513/172646111-4db7f1ce-02db-4dcd-b098-584fbd5d915b.png)
+![image](https://user-images.githubusercontent.com/82418513/173235232-1b2ec0f4-572d-46a3-8f60-1141da91a2c8.png)
+
 
